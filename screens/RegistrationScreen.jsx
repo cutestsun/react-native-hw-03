@@ -8,15 +8,14 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
+import { useState } from "react";
 import { TextInput } from "react-native-paper";
+import { Formik } from "formik";
+import * as Yup from "yup";
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../utils/variables";
-import { useState } from "react";
 
 export const RegistrationScreen = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isVisiblePassword, setIsVisiblePassword] = useState(true);
   const [isOpenKeyboard, setIsOpenKeyboard] = useState(false);
 
@@ -28,14 +27,15 @@ export const RegistrationScreen = () => {
     },
   };
 
-  const handleFormSubmit = () => {
-    const formData = {
-      name,
-      email,
-      password,
-    };
-    console.log(formData);
-  };
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required("Необхідно вказати логін"),
+    email: Yup.string()
+      .email("Недійсна електронна пошта")
+      .required("Необхідно вказати електронну пошту"),
+    password: Yup.string()
+      .min(6, "Пароль має бути не менше 6 символів")
+      .required("Необхідно вказати пароль"),
+  });
 
   const onFocus = () => {
     setIsOpenKeyboard(true);
@@ -79,73 +79,120 @@ export const RegistrationScreen = () => {
               </View>
             </TouchableOpacity>
             <Text style={styles.title}>Реєстрація</Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                // placeholder="Логін"
-                placeholderTextColor={colors.inputPlaceholderColor}
-                value={name}
-                onChangeText={setName}
-                onFocus={onFocus}
-                onBlur={onBlur}
-                mode="outlined"
-                label="Логін"
-                outlineColor={colors.inputBorderColor}
-                outlineStyle={{ borderWidth: 1 }}
-                theme={inputTheme}
-                contentStyle={styles.input}
-              />
-              <TextInput
-                // placeholder="Адреса електронної пошти"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholderTextColor={colors.inputPlaceholderColor}
-                value={email}
-                onChangeText={setEmail}
-                onFocus={onFocus}
-                onBlur={onBlur}
-                mode="outlined"
-                label="Адреса електронної пошти"
-                outlineColor={colors.inputBorderColor}
-                outlineStyle={{ borderWidth: 1 }}
-                theme={inputTheme}
-                contentStyle={styles.input}
-              />
-              <View style={{ position: "relative" }}>
-                <TextInput
-                  // placeholder="Пароль"
-                  placeholderTextColor={colors.inputPlaceholderColor}
-                  secureTextEntry={isVisiblePassword}
-                  value={password}
-                  onChangeText={setPassword}
-                  onFocus={onFocus}
-                  onBlur={onBlur}
-                  mode="outlined"
-                  label="Пароль"
-                  outlineColor={colors.inputBorderColor}
-                  outlineStyle={{ borderWidth: 1 }}
-                  theme={inputTheme}
-                  contentStyle={styles.input}
-                />
-                <TouchableOpacity
-                  onPress={() =>
-                    setIsVisiblePassword((prevState) => !prevState)
-                  }
-                  style={styles.showPasswordBtnContainer}
-                  accessibilityLabel="Show or hide password"
-                >
-                  <Text style={styles.showPasswordBtnText}>
-                    {isVisiblePassword ? "Показати" : "Сховати"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <TouchableOpacity
-              onPress={handleFormSubmit}
-              style={styles.submitBtnContainer}
-              accessibilityLabel="Sign Up"
+            <Formik
+              initialValues={{ name: "", email: "", password: "" }}
+              onSubmit={(values, actions) => {
+                console.log(values);
+                actions.resetForm();
+              }}
+              validationSchema={validationSchema}
             >
-              <Text style={styles.submitBtnText}>Зареєстуватися</Text>
-            </TouchableOpacity>
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                errors,
+                touched,
+              }) => (
+                <>
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      // placeholder="Логін"
+                      // placeholderTextColor={colors.inputPlaceholderColor}
+                      value={values.name}
+                      onChangeText={handleChange("name")}
+                      onFocus={onFocus}
+                      onBlur={() => {
+                        handleBlur("name");
+                        onBlur();
+                      }}
+                      mode="outlined"
+                      label="Логін"
+                      outlineColor={colors.inputBorderColor}
+                      outlineStyle={{ borderWidth: 1 }}
+                      theme={inputTheme}
+                      contentStyle={styles.input}
+                    />
+                    {touched.name && errors.name && (
+                      <Text style={{ color: "red", marginLeft: 16 }}>
+                        {errors.name}
+                      </Text>
+                    )}
+                    <TextInput
+                      // placeholder="Адреса електронної пошти"
+                      // placeholderTextColor={colors.inputPlaceholderColor}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      value={values.email}
+                      onChangeText={handleChange("email")}
+                      onFocus={onFocus}
+                      onBlur={() => {
+                        handleBlur("email");
+                        onBlur();
+                      }}
+                      mode="outlined"
+                      label="Адреса електронної пошти"
+                      outlineColor={colors.inputBorderColor}
+                      outlineStyle={{ borderWidth: 1 }}
+                      theme={inputTheme}
+                      contentStyle={styles.input}
+                    />
+                    {touched.email && errors.email && (
+                      <Text style={{ color: "red", marginLeft: 16 }}>
+                        {errors.email}
+                      </Text>
+                    )}
+                    <View style={{ position: "relative" }}>
+                      <TextInput
+                        // placeholder="Пароль"
+                        // placeholderTextColor={colors.inputPlaceholderColor}
+                        secureTextEntry={isVisiblePassword}
+                        value={values.password}
+                        onChangeText={handleChange("password")}
+                        onFocus={onFocus}
+                        onBlur={() => {
+                          handleBlur("password");
+                          onBlur();
+                        }}
+                        mode="outlined"
+                        label="Пароль"
+                        outlineColor={colors.inputBorderColor}
+                        outlineStyle={{ borderWidth: 1 }}
+                        theme={inputTheme}
+                        contentStyle={styles.input}
+                      />
+                      {touched.password && errors.password && (
+                        <Text
+                          style={{ color: "red", marginTop: 8, marginLeft: 16 }}
+                        >
+                          {errors.password}
+                        </Text>
+                      )}
+                      <TouchableOpacity
+                        onPress={() =>
+                          setIsVisiblePassword((prevState) => !prevState)
+                        }
+                        style={styles.showPasswordBtnContainer}
+                        accessibilityLabel="Show or hide password"
+                      >
+                        <Text style={styles.showPasswordBtnText}>
+                          {isVisiblePassword ? "Показати" : "Сховати"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    onPress={handleSubmit}
+                    style={styles.submitBtnContainer}
+                    accessibilityLabel="Sign Up"
+                  >
+                    <Text style={styles.submitBtnText}>Зареєструватися</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </Formik>
+
             <TouchableOpacity
               style={styles.logInBtnContainer}
               accessibilityLabel="Link to Log In page"
