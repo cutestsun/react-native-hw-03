@@ -2,13 +2,14 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
-
-import { colors } from "../utils/variables"; //! FIX
+import { TextInput } from "react-native-paper";
+import { colors } from "../utils/variables";
 import { useState } from "react";
 
 export const LoginScreen = () => {
@@ -16,6 +17,14 @@ export const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [isVisiblePassword, setIsVisiblePassword] = useState(true);
   const [isOpenKeyboard, setIsOpenKeyboard] = useState(false);
+
+  const inputTheme = {
+    roundness: 8,
+    colors: {
+      primary: colors.mainAccentColor,
+      background: colors.inputBgColor,
+    },
+  };
 
   const handleFormSubmit = () => {
     const formData = {
@@ -26,75 +35,98 @@ export const LoginScreen = () => {
     console.log(formData);
   };
 
+  const onFocus = () => {
+    setIsOpenKeyboard(true);
+  };
+
+  const onBlur = () => {
+    setIsOpenKeyboard(false);
+  };
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "flex-end",
-        }}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
       >
         <View
           style={{
-            ...styles.mainContainer,
-            paddingBottom: isOpenKeyboard ? 10 : 128,
-            height: isOpenKeyboard ? 250 : "auto",
+            flex: 1,
+            justifyContent: "flex-end",
           }}
         >
-          <Text style={styles.title}>Увійти</Text>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Адреса електронної пошти"
-              placeholderTextColor={colors.inputPlaceholderColor}
-              value={email}
-              onChangeText={setEmail}
-              onFocus={() => setIsOpenKeyboard(true)}
-              onBlur={() => setIsOpenKeyboard(false)}
-            />
-            <View style={{ position: "relative" }}>
+          <View
+            style={{
+              ...styles.mainContainer,
+              paddingBottom: isOpenKeyboard ? 10 : 128,
+              height: isOpenKeyboard ? 250 : "auto",
+            }}
+          >
+            <Text style={styles.title}>Увійти</Text>
+            <View style={styles.inputWrapper}>
               <TextInput
-                style={styles.input}
-                placeholder="Пароль"
+                // placeholder="Адреса електронної пошти"
+                keyboardType="email-address"
+                autoCapitalize="none"
                 placeholderTextColor={colors.inputPlaceholderColor}
-                secureTextEntry={isVisiblePassword}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => setIsOpenKeyboard(true)}
-                onBlur={() => setIsOpenKeyboard(false)}
+                value={email}
+                onChangeText={setEmail}
+                onFocus={onFocus}
+                onBlur={onBlur}
+                mode="outlined"
+                label="Адреса електронної пошти"
+                outlineColor={colors.inputBorderColor}
+                outlineStyle={{ borderWidth: 1 }}
+                theme={inputTheme}
+                contentStyle={styles.input}
               />
-              <TouchableOpacity
-                onPress={() => setIsVisiblePassword((prevState) => !prevState)}
-                style={styles.showPasswordBtnContainer}
-                accessibilityLabel="Show or hide password"
-              >
-                <Text style={styles.showPasswordBtnText}>
-                  {isVisiblePassword ? "Показати" : "Сховати"}
-                </Text>
-              </TouchableOpacity>
+              <View style={{ position: "relative" }}>
+                <TextInput
+                  // placeholder="Пароль"
+                  placeholderTextColor={colors.inputPlaceholderColor}
+                  secureTextEntry={isVisiblePassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  mode="outlined"
+                  label="Пароль"
+                  outlineColor={colors.inputBorderColor}
+                  outlineStyle={{ borderWidth: 1 }}
+                  theme={inputTheme}
+                  contentStyle={styles.input}
+                />
+                <TouchableOpacity
+                  onPress={() =>
+                    setIsVisiblePassword((prevState) => !prevState)
+                  }
+                  style={styles.showPasswordBtnContainer}
+                  accessibilityLabel="Show or hide password"
+                >
+                  <Text style={styles.showPasswordBtnText}>
+                    {isVisiblePassword ? "Показати" : "Сховати"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
+            <TouchableOpacity
+              onPress={handleFormSubmit}
+              style={styles.submitBtnContainer}
+              accessibilityLabel="Sign Up"
+            >
+              <Text style={styles.submitBtnText}>Увійти</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.signUpBtnContainer}
+              accessibilityLabel="Link to Log In page"
+            >
+              <Text style={styles.signUpBtnText}>
+                Немає акаунту? Зареєструватися
+              </Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            onPress={handleFormSubmit}
-            style={styles.submitBtnContainer}
-            accessibilityLabel="Sign Up"
-          >
-            <Text style={styles.submitBtnText}>Увійти</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.signUpBtnContainer}
-            accessibilityLabel="Link to Log In page"
-          >
-            <Text style={styles.signUpBtnText}>
-              Немає акаунту? Зареєструватися
-            </Text>
-          </TouchableOpacity>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -140,31 +172,24 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Medium",
     fontSize: 30,
     letterSpacing: 0.3,
-    marginBottom: 33,
+    marginBottom: 25,
   },
   input: {
-    backgroundColor: colors.inputBgColor,
-    borderColor: colors.inputBorderColor,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
     fontSize: 16,
-
+    color: colors.mainTextColor,
     fontFamily: "Roboto-Regular",
-    height: Platform.OS === "ios" ? 52 : 50,
-    // height: 50,
+    height: 50,
   },
   inputWrapper: {
-    rowGap: 16,
+    rowGap: 8,
     marginBottom: 43,
   },
   showPasswordBtnContainer: {
     position: "absolute",
     right: 16,
-    // top: 16,
-    paddingTop: Platform.OS === "ios" ? 16 : 14.5,
-    paddingBottom: Platform.OS === "ios" ? 16 : 14.5,
-
+    top: 6,
+    paddingTop: 16,
+    paddingBottom: 16,
     fontFamily: "Roboto-Regular",
     fontSize: 16,
   },
