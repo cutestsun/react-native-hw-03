@@ -225,6 +225,7 @@ const styles = StyleSheet.create({
   },
   showPasswordBtnContainer: {
     position: "absolute",
+    zIndex: 1,
     right: 16,
     top: 6,
     paddingTop: 16,
